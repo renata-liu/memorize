@@ -9,6 +9,7 @@ import Foundation
 
 struct MemoryGame<CardContent> where CardContent: Equatable {
     private(set) var cards: Array<Card>
+    private(set) var score = 0
     
     init(numberOfPairsOfCards: Int, cardContentFactory: (Int) -> CardContent) {
         cards = []
@@ -18,6 +19,7 @@ struct MemoryGame<CardContent> where CardContent: Equatable {
             cards.append(Card(content: content, id: "\(pairIndex+1)a"))
             cards.append(Card(content: content, id: "\(pairIndex+1)b"))
         }
+        cards.shuffle()
     }
     
     var indexOfOnlyFaceUpCard: Int? {
@@ -29,9 +31,14 @@ struct MemoryGame<CardContent> where CardContent: Equatable {
         if let chosenIndex = cards.firstIndex(where: { $0.id == card.id }) {
             if !cards[chosenIndex].isFaceUp && !cards[chosenIndex].isMatched {
                 if let potentialMatchIndex = indexOfOnlyFaceUpCard {
+                    cards[chosenIndex].hasBeenFlipped += 1
+                    cards[potentialMatchIndex].hasBeenFlipped += 1
                     if cards[potentialMatchIndex].content == cards[chosenIndex].content {
                         cards[chosenIndex].isMatched = true
                         cards[potentialMatchIndex].isMatched = true
+                        score += 2
+                    } else if cards[chosenIndex].hasBeenFlipped > 1 || cards[potentialMatchIndex].hasBeenFlipped > 1 {
+                        score -= 1
                     }
                 } else {
                     indexOfOnlyFaceUpCard = chosenIndex
@@ -41,19 +48,23 @@ struct MemoryGame<CardContent> where CardContent: Equatable {
         }
     }
     
-    mutating func shuffle() {
-        cards.shuffle()
-        print(cards)
-    }
-    
     struct Card: Equatable, Identifiable, CustomDebugStringConvertible {
         var isFaceUp = false
         var isMatched = false
         let content: CardContent
+        var hasBeenFlipped: Int = 0
         
         var id: String
         var debugDescription: String {
             "\(id): \(content) \(isFaceUp ? "up" : "down") \(isMatched ? "matched" : "unmatched")"
+        }
+    }
+    
+    func randomTheme() -> Theme {
+        if (themes.randomElement() == nil) {
+            return randomTheme()
+        } else {
+            return themes.randomElement()!
         }
     }
 }

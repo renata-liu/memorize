@@ -16,8 +16,11 @@ struct EmojiMemoryGameView: View {
                 cards
                     .animation(.default, value: viewModel.cards)
             }
-            Button("Shuffle") {
-                viewModel.shuffle()
+            Text("Score: \(viewModel.score)")
+                .font(.system(size: 30))
+                .padding()
+            Button("New Game") {
+                viewModel.newGame()
             }
         }
         .padding()
